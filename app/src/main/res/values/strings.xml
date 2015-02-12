@@ -3,4 +3,9 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="text_capture">Capture</string>
+    <string name="text_quit">Quit</string>
+    <string name="action_doCapture">doCapture</string>
+    <string name="action_exit">doExit</string>
+    <string name="title_activity_web_home">WebHomeActivity</string>
 </resources>

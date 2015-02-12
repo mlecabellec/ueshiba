@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/mainLinearLayout"
+    android:onClick="@string/action_doCapture">
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="64dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:id="@+id/imageView"
+            android:src="@mipmap/img_camera_01" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/text_capture"
+            android:id="@+id/textView"
+            android:singleLine="true"
+            android:gravity="center_vertical" />
+    </GridLayout>
+
+    <GridLayout
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:onClick="@string/action_exit">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:id="@+id/imageView2"
+            android:src="@mipmap/img_shutdown_01" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="@string/text_quit"
+            android:id="@+id/textView2"
+            android:singleLine="true"
+            android:gravity="center_vertical" />
+    </GridLayout>
+
+    <WebView
+        android:layout_width="fill_parent"
+        android:layout_height="300dp"
+        android:id="@+id/webView" />
+</LinearLayout>
