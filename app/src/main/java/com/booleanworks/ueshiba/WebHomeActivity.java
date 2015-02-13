@@ -32,7 +32,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         WebView webView = (WebView) this.findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.addJavascriptInterface(this, "activity");
-        webView.loadData("<h1 id='test' onclick='alert(activity.testJs())'>default text 5</h1><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 7</h1><script type='text/javascript'>alert(activity.testJs());activity.doCapture();</script>", "text/html", "UTF-8");
 
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -89,7 +89,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
     @JavascriptInterface
     public String testJs() {
-        return "Hello from activity ! (5)";
+        return "Hello from activity ! (7)";
     }
 
     @JavascriptInterface
@@ -122,7 +122,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
 
-        
+
         camera.release();
 
     }
