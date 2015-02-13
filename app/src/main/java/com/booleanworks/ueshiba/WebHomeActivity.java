@@ -122,6 +122,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
 
+        
         camera.release();
 
     }
