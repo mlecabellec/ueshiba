@@ -1,6 +1,7 @@
 package com.booleanworks.ueshiba;
 
 import android.content.Context;
+import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,14 +13,17 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceView;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
+import java.io.IOException;
 
-public class WebHomeActivity extends ActionBarActivity {
+
+public class WebHomeActivity extends ActionBarActivity implements Camera.PictureCallback{
 
     public SensorManager sensorManager;
-    public SensorEventListener gyroListener ;
+    public SensorEventListener gyroListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +42,7 @@ public class WebHomeActivity extends ActionBarActivity {
             public SensorManager sensorManager;
             public WebHomeActivity webHomeActivity;
 
-            public SensorEventListener setup(SensorManager sensorManager,WebHomeActivity webHomeActivity) {
+            public SensorEventListener setup(SensorManager sensorManager, WebHomeActivity webHomeActivity) {
                 this.sensorManager = sensorManager;
                 this.webHomeActivity = webHomeActivity;
                 return this;
@@ -46,14 +50,14 @@ public class WebHomeActivity extends ActionBarActivity {
 
             @Override
             public void onSensorChanged(SensorEvent event) {
-                float yRate = event.values[1] ;
+                float yRate = event.values[1];
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
             }
-        }.setup(this.sensorManager,this);
+        }.setup(this.sensorManager, this);
 
         this.sensorManager.registerListener(this.gyroListener, gyro, 1000000);
 
@@ -89,28 +93,36 @@ public class WebHomeActivity extends ActionBarActivity {
     }
 
     @JavascriptInterface
-    public void doCapture()
-    {
-
+    public void doCapture() {
         try {
-            CameraManager cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
-            String[] cameraIds = cameraManager.getCameraIdList() ;
-            for(String cCameraId : cameraIds)
-            {
-                CameraCharacteristics camCaps = cameraManager.getCameraCharacteristics(cCameraId) ;
+            for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++) {
+                Camera cCam = Camera.open(ctCam);
+                Camera.CameraInfo camInfo = new Camera.CameraInfo();
+                Camera.getCameraInfo(ctCam, camInfo);
+                if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                    cCam.enableShutterSound(true);
+                    SurfaceView dummySurfaceView = new SurfaceView(this);
 
-                if(camCaps.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_BACK)
-                {
+                    cCam.setPreviewDisplay(dummySurfaceView.getHolder());
+                    cCam.startPreview();
+                    cCam.takePicture(null,null,this);
 
                 }
 
 
             }
 
-        } catch (CameraAccessException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 
+
+    }
+
+    @Override
+    public void onPictureTaken(byte[] data, Camera camera) {
+
+        camera.release();
 
     }
 }
