@@ -100,7 +100,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
                 Camera.CameraInfo camInfo = new Camera.CameraInfo();
                 Camera.getCameraInfo(ctCam, camInfo);
                 if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    cCam.enableShutterSound(true);
+                    //cCam.enableShutterSound(true);
                     SurfaceView dummySurfaceView = new SurfaceView(this);
 
                     cCam.setPreviewDisplay(dummySurfaceView.getHolder());
