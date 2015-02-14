@@ -5,5 +5,7 @@
     <string name="hello_world">Bonjour !</string>
     <string name="text_capture">Acquérir QR</string>
     <string name="text_quit">Quitter</string>
+    <string name="msg_default_mms_subject">MMS</string>
+    <string name="msg_intent_failed">Failed !</string>
 
 </resources>
