@@ -19,6 +19,8 @@ import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
@@ -32,8 +34,10 @@ import java.io.IOException;
 
 public class WebHomeActivity extends ActionBarActivity implements Camera.PictureCallback {
 
-    public SensorManager sensorManager;
-    public SensorEventListener gyroListener;
+    public SensorManager sensorManager = null;
+    public SensorEventListener gyroListener = null;
+    public Camera usedCamera = null;
+    public CameraPreview previewSurfaceView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +46,27 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         WebView webView = (WebView) this.findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.addJavascriptInterface(this, "activity");
-        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 10</h1><script type='text/javascript'>alert(activity.testJs());activity.doCapture();</script>", "text/html", "UTF-8");
+        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 32</h1><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+
+
+        for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++) {
+            Camera cCam = Camera.open(ctCam);
+
+            //cCam.lock();
+            Camera.CameraInfo camInfo = new Camera.CameraInfo();
+            Camera.getCameraInfo(ctCam, camInfo);
+            if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                this.usedCamera = cCam;
+
+            }
+
+        }
+
+        this.previewSurfaceView = new CameraPreview(this, this.usedCamera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.cameraPreviewFrame);
+        preview.addView(this.previewSurfaceView);
+
+
 
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -105,41 +129,38 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @JavascriptInterface
     public void doCapture() {
         try {
-            for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++) {
-                Camera cCam = Camera.open(ctCam);
-                cCam.lock();
-                Camera.CameraInfo camInfo = new Camera.CameraInfo();
-                Camera.getCameraInfo(ctCam, camInfo);
-                if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    //cCam.enableShutterSound(true);
-                    //SurfaceView dummySurfaceView = new SurfaceView(this);
 
-                    cCam.setPreviewDisplay(((SurfaceView)this.findViewById(R.id.webcamSurfaceView)).getHolder());
-                    cCam.startPreview();
-                    cCam.takePicture(null, null, this);
+            if (this.usedCamera != null) {
 
-                }
-
+                this.usedCamera.takePicture(null, null, this);
 
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RuntimeException e) {
-            for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++){
 
+        } catch (RuntimeException e) {
+            if (this.usedCamera != null) {
+                //this.usedCamera.unlock();
+                try {
+                    this.usedCamera.reconnect();
+                    this.usedCamera.release();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                this.usedCamera.release();
             }
             e.printStackTrace();
         }
     }
 
 
-
-
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         try {
             Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            //camera.stopPreview();
+            //camera.release();
+            //this.previewSurfaceView.getHolder().getSurface().release();
+
 
             int[] colorData = new int[bitmap.getHeight() * bitmap.getWidth()];
             bitmap.getPixels(colorData, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
@@ -156,9 +177,65 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
             e.printStackTrace();
         }
 
-        camera.unlock();
-        camera.release();
+        //camera.stopPreview();
+        //camera.unlock();
+        //camera.release();
 
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (this.usedCamera != null) {
+            //this.usedCamera.reconnect();
+            //this.usedCamera.unlock();
+            //this.usedCamera.release();
+            try {
+                //this.usedCamera.reconnect();
+                this.usedCamera.release();
+
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (this.usedCamera != null) {
+            //this.usedCamera.reconnect();
+            //this.usedCamera.unlock();
+            //this.usedCamera.release();
+            try {
+                //this.usedCamera.reconnect();
+                this.usedCamera.release();
+
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (this.usedCamera != null) {
+            //this.usedCamera.reconnect();
+            //this.usedCamera.unlock();
+            //this.usedCamera.release();
+            try {
+                //this.usedCamera.reconnect();
+                try {
+                    this.usedCamera.reconnect();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            } catch (RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
