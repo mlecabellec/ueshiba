@@ -64,7 +64,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
 
                     Camera.Parameters camParameters = this.usedCamera.getParameters();
-                    camParameters.setPictureSize(64*4,48*4);
+                    camParameters.setPictureSize(64*5,48*5);
                     this.usedCamera.setParameters(camParameters);
 
 
