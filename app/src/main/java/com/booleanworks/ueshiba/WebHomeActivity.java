@@ -30,6 +30,7 @@ import com.google.zxing.Result;
 import com.google.zxing.common.GlobalHistogramBinarizer;
 
 import java.io.IOException;
+import java.nio.IntBuffer;
 
 
 public class WebHomeActivity extends ActionBarActivity implements Camera.PictureCallback {
@@ -46,17 +47,31 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         WebView webView = (WebView) this.findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.addJavascriptInterface(this, "activity");
-        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 32</h1><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 33</h1><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
 
 
         for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++) {
-            Camera cCam = Camera.open(ctCam);
 
-            //cCam.lock();
-            Camera.CameraInfo camInfo = new Camera.CameraInfo();
-            Camera.getCameraInfo(ctCam, camInfo);
-            if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                this.usedCamera = cCam;
+            if(this.usedCamera == null)
+            {
+                Camera cCam = Camera.open(ctCam);
+
+                //cCam.lock();
+                Camera.CameraInfo camInfo = new Camera.CameraInfo();
+                Camera.getCameraInfo(ctCam, camInfo);
+                if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
+                    this.usedCamera = cCam;
+
+
+                    Camera.Parameters camParameters = this.usedCamera.getParameters();
+                    camParameters.setPictureSize(64*4,48*4);
+                    this.usedCamera.setParameters(camParameters);
+
+
+                }else
+                {
+                    cCam.release();
+                }
 
             }
 
@@ -156,15 +171,17 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @Override
     public void onPictureTaken(byte[] data, Camera camera) {
         try {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length,options);
             //camera.stopPreview();
             //camera.release();
             //this.previewSurfaceView.getHolder().getSurface().release();
 
+            int bufferSize = options.outHeight * options.outWidth ;
+            IntBuffer intBuffer =  IntBuffer.allocate(bufferSize) ;
+            bitmap.copyPixelsToBuffer(intBuffer);
 
-            int[] colorData = new int[bitmap.getHeight() * bitmap.getWidth()];
-            bitmap.getPixels(colorData, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-            RGBLuminanceSource rgbLuminanceSource = new RGBLuminanceSource(bitmap.getWidth(), bitmap.getHeight(), colorData);
+            RGBLuminanceSource rgbLuminanceSource = new RGBLuminanceSource(options.outWidth, options.outHeight, intBuffer.array());
 
             MultiFormatReader multiFormatReader = new MultiFormatReader();
             GlobalHistogramBinarizer globalHistogramBinarizer = new GlobalHistogramBinarizer(rgbLuminanceSource);
