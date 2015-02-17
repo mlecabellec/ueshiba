@@ -7,7 +7,12 @@ import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.net.Uri;
 import android.os.Build;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import java.util.Random;
 import java.util.zip.CRC32;
@@ -76,10 +81,10 @@ public class DatabaseManager extends SQLiteOpenHelper {
         long userId = random.nextLong();
 
 
-        //db.beginTransaction();
-        db.execSQL("CREATE TABLE appParam (pKey TEXT PRIMARY KEY, pTextValue TEXT,pIntegerValue INTEGER,pFloatValue FLOAT)");
-        db.execSQL("CREATE TABLE appPage (pageId INTEGER PRIMARY KEY, htmlContent BLOB)");
-        db.execSQL("CREATE TABLE appContent (contentId INTEGER PRIMARY KEY, binaryContent BLOB)");
+        db.beginTransaction();
+        db.execSQL("CREATE TABLE appParam (pKey TEXT PRIMARY KEY, pTextValue TEXT,pIntegerValue INTEGER,pFloatValue FLOAT,jsonData BLOB)");
+        db.execSQL("CREATE TABLE appPage (pageId INTEGER PRIMARY KEY, htmlContent BLOB, htmlContentFile TEXT)");
+        db.execSQL("CREATE TABLE appContent (contentId INTEGER PRIMARY KEY, binaryContent BLOB, binaryContentFile TEXT)");
         db.execSQL("CREATE TABLE appData (dataId INTEGER PRIMARY KEY, userId INTEGER , terminalId INTEGER,jsonContent BLOB)");
 
         //db.execSQL("INSERT INTO appParam(pkey,pIntegerValue) VALUES ('terminalId',"+terminalId+")");
@@ -107,7 +112,7 @@ public class DatabaseManager extends SQLiteOpenHelper {
         db.insert("appPage",null,page1Value);
 
 
-        //db.endTransaction();
+        db.endTransaction();
 
 
     }
@@ -188,4 +193,49 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         }
     }
+
+    public void wireWebView(WebView webView)
+    {
+        WebViewClient customClient = new WebViewClient(){
+
+            WebView relatedWebView;
+            DatabaseManager databaseManager;
+
+            /**
+             * Notify the host application of a resource request and allow the
+             * application to return the data.  If the return value is null, the WebView
+             * will continue to load the resource as usual.  Otherwise, the return
+             * response and data will be used.  NOTE: This method is called on a thread
+             * other than the UI thread so clients should exercise caution
+             * when accessing private data or the view system.
+             *
+             * @param view    The {@link android.webkit.WebView} that is requesting the
+             *                resource.
+             * @param request Object containing the details of the request.
+             * @return A {@link android.webkit.WebResourceResponse} containing the
+             * response information or null if the WebView should load the
+             * resource itself.
+             */
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+
+                String referer = request.getRequestHeaders().get("referer");
+                Uri uri = request.getUrl() ;
+                String viewUrl = view.getUrl();
+                String viewOriginalUrl = view.getOriginalUrl() ;
+
+                return null;
+            }
+
+            public WebViewClient setup(WebView webView1, DatabaseManager databaseManager1)
+            {
+                this.relatedWebView = webView1 ;
+                this.databaseManager = databaseManager1 ;
+                return this ;
+            }
+        }.setup(webView,this);
+
+        webView.setWebViewClient(customClient);
+    }
+
 }
