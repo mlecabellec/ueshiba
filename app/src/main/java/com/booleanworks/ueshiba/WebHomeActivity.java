@@ -39,6 +39,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     public SensorEventListener gyroListener = null;
     public Camera usedCamera = null;
     public CameraPreview previewSurfaceView = null;
+    public DatabaseManager databaseManager = null ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +82,8 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         FrameLayout preview = (FrameLayout) findViewById(R.id.cameraPreviewFrame);
         preview.addView(this.previewSurfaceView);
 
-
+        this.databaseManager = DatabaseManager.getInstance(this) ;
+        DatabaseManager.doBasicTest(this,1);
 
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 

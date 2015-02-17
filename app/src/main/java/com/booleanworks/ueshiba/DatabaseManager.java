@@ -1,9 +1,16 @@
 package com.booleanworks.ueshiba;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.os.Build;
+
+import java.util.Random;
+import java.util.zip.CRC32;
 
 /**
  * Created by vortigern on 17/02/15.
@@ -11,10 +18,23 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseManager extends SQLiteOpenHelper {
     private static DatabaseManager instance = null;
 
+    public static final int CURRENT_DB_VERSION = 1;
+    public static final String CURRENT_DB_NAME = "ueshiba_1";
+
     public static DatabaseManager getInstance(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
 
         if (DatabaseManager.instance == null) {
             DatabaseManager.instance = new DatabaseManager(context, name, factory, version);
+            return DatabaseManager.instance;
+        } else {
+            return DatabaseManager.instance;
+        }
+    }
+
+    public static DatabaseManager getInstance(Context context) {
+
+        if (DatabaseManager.instance == null) {
+            DatabaseManager.instance = new DatabaseManager(context, DatabaseManager.CURRENT_DB_NAME, null, DatabaseManager.CURRENT_DB_VERSION);
             return DatabaseManager.instance;
         } else {
             return DatabaseManager.instance;
@@ -47,10 +67,47 @@ public class DatabaseManager extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        db.execSQL("CREATE TABLE appParam (pkey VARCHAR(200) PRIMARY KEY, pvalue VARCHAR(200))");
-        db.execSQL("CREATE TABLE appPage (id BIGINT PRIMARY KEY, htmlContent BLOB");
-        db.execSQL("CREATE TABLE appContent (id BIGINT PRIMARY KEY, binaryContent BLOB");
-        db.execSQL("CREATE TABLE appData (id BIGINT PRIMARY KEY, userId BIGINT , clientId BIGINT,jsonContent BLOB");
+        Random random = new Random();
+        String serialNumber = Build.SERIAL == null ? "UNKNOWN" : Build.SERIAL;
+        serialNumber += "-" + Build.FINGERPRINT;
+        CRC32 crc32 = new CRC32();
+        crc32.update(serialNumber.getBytes());
+        long terminalId = crc32.getValue();
+        long userId = random.nextLong();
+
+
+        //db.beginTransaction();
+        db.execSQL("CREATE TABLE appParam (pKey TEXT PRIMARY KEY, pTextValue TEXT,pIntegerValue INTEGER,pFloatValue FLOAT)");
+        db.execSQL("CREATE TABLE appPage (pageId INTEGER PRIMARY KEY, htmlContent BLOB)");
+        db.execSQL("CREATE TABLE appContent (contentId INTEGER PRIMARY KEY, binaryContent BLOB)");
+        db.execSQL("CREATE TABLE appData (dataId INTEGER PRIMARY KEY, userId INTEGER , terminalId INTEGER,jsonContent BLOB)");
+
+        //db.execSQL("INSERT INTO appParam(pkey,pIntegerValue) VALUES ('terminalId',"+terminalId+")");
+        //db.execSQL("INSERT INTO appParam(pkey,pIntegerValue) VALUES ('userId',"+userId+")");
+        //db.execSQL("INSERT INTO appParam(pkey,pTextValue) VALUES ('serverBaseUrl','http://poc2015a.booleanworks.com')");
+
+        ContentValues terminalIdValue = new ContentValues() ;
+        terminalIdValue.put("pKey","terminalId");
+        terminalIdValue.put("pIntegerValue",terminalId);
+        db.insert("appParam",null,terminalIdValue);
+
+        ContentValues userIdValue = new ContentValues() ;
+        userIdValue.put("pKey","userId");
+        userIdValue.put("pIntegerValue",userId);
+        db.insert("appParam",null,userIdValue);
+
+        ContentValues serverBaseUrlValue = new ContentValues() ;
+        serverBaseUrlValue.put("pKey","serverBaseUrl");
+        serverBaseUrlValue.put("pTextValue","http://poc2015a.booleanworks.com");
+        db.insert("appParam",null,serverBaseUrlValue);
+
+        ContentValues page1Value = new ContentValues() ;
+        page1Value.put("pageId",1);
+        page1Value.put("htmlContent","<html><head><title>TEST PAGE 1</title></head><body><p>TEST PAGE 1<p></body></html>");
+        db.insert("appPage",null,page1Value);
+
+
+        //db.endTransaction();
 
 
     }
@@ -85,6 +142,9 @@ public class DatabaseManager extends SQLiteOpenHelper {
                     case 1:
                         //SUCKER !
                         break;
+                    case 2:
+                        //OK
+                        break;
                     default:
                         //TODO
                         break;
@@ -92,13 +152,40 @@ public class DatabaseManager extends SQLiteOpenHelper {
                 break;
 
             default:
-                switch (newVersion) {
-                    default:
-                        //TODO
-                        break;
-                }
+
                 break;
         }
 
+    }
+
+    public static int doBasicTest(Context context , int testType)
+    {
+
+        DatabaseManager databaseManager = DatabaseManager.getInstance(context) ;
+        SQLiteDatabase db = databaseManager.getWritableDatabase() ;
+
+        switch (testType)
+        {
+            case 1 :
+
+                SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
+                builder.setTables("appParam");
+                Cursor cursor1 = builder.query(db,new String[]{"pKey","pIntegerValue"},"pKey = ?1",new String[]{"terminalId"},null,null,null);
+
+                if(cursor1.getCount() == 1)
+                {
+                    return 0 ;
+                }else
+                {
+                    return -1;
+                }
+
+
+
+            default:
+                return -1 ;
+
+
+        }
     }
 }
