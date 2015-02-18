@@ -48,7 +48,6 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         WebView webView = (WebView) this.findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.addJavascriptInterface(this, "activity");
-        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 33</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://content/1'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
 
 
         for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++) {
@@ -110,6 +109,8 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         }.setup(this.sensorManager, this);
 
         this.sensorManager.registerListener(this.gyroListener, gyro, 1000000);
+
+        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://content/1'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
 
 
     }

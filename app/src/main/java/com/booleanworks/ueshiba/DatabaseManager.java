@@ -9,11 +9,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Parcel;
+import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.List;
 import java.util.Random;
 import java.util.zip.CRC32;
 
@@ -91,25 +97,25 @@ public class DatabaseManager extends SQLiteOpenHelper {
         //db.execSQL("INSERT INTO appParam(pkey,pIntegerValue) VALUES ('userId',"+userId+")");
         //db.execSQL("INSERT INTO appParam(pkey,pTextValue) VALUES ('serverBaseUrl','http://poc2015a.booleanworks.com')");
 
-        ContentValues terminalIdValue = new ContentValues() ;
-        terminalIdValue.put("pKey","terminalId");
-        terminalIdValue.put("pIntegerValue",terminalId);
-        db.insert("appParam",null,terminalIdValue);
+        ContentValues terminalIdValue = new ContentValues();
+        terminalIdValue.put("pKey", "terminalId");
+        terminalIdValue.put("pIntegerValue", terminalId);
+        db.insert("appParam", null, terminalIdValue);
 
-        ContentValues userIdValue = new ContentValues() ;
-        userIdValue.put("pKey","userId");
-        userIdValue.put("pIntegerValue",userId);
-        db.insert("appParam",null,userIdValue);
+        ContentValues userIdValue = new ContentValues();
+        userIdValue.put("pKey", "userId");
+        userIdValue.put("pIntegerValue", userId);
+        db.insert("appParam", null, userIdValue);
 
-        ContentValues serverBaseUrlValue = new ContentValues() ;
-        serverBaseUrlValue.put("pKey","serverBaseUrl");
-        serverBaseUrlValue.put("pTextValue","http://poc2015a.booleanworks.com");
-        db.insert("appParam",null,serverBaseUrlValue);
+        ContentValues serverBaseUrlValue = new ContentValues();
+        serverBaseUrlValue.put("pKey", "serverBaseUrl");
+        serverBaseUrlValue.put("pTextValue", "http://poc2015a.booleanworks.com");
+        db.insert("appParam", null, serverBaseUrlValue);
 
-        ContentValues page1Value = new ContentValues() ;
-        page1Value.put("pageId",1);
-        page1Value.put("htmlContent","<html><head><title>TEST PAGE 1</title></head><body><p>TEST PAGE 1<p></body></html>");
-        db.insert("appPage",null,page1Value);
+        ContentValues page1Value = new ContentValues();
+        page1Value.put("pageId", 1);
+        page1Value.put("htmlContent", "<html><head><title>TEST PAGE 1</title></head><body><p>TEST PAGE 1<p></body></html>");
+        db.insert("appPage", null, page1Value);
 
 
         db.endTransaction();
@@ -163,40 +169,34 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
     }
 
-    public static int doBasicTest(Context context , int testType)
-    {
+    public static int doBasicTest(Context context, int testType) {
 
-        DatabaseManager databaseManager = DatabaseManager.getInstance(context) ;
-        SQLiteDatabase db = databaseManager.getWritableDatabase() ;
+        DatabaseManager databaseManager = DatabaseManager.getInstance(context);
+        SQLiteDatabase db = databaseManager.getWritableDatabase();
 
-        switch (testType)
-        {
-            case 1 :
+        switch (testType) {
+            case 1:
 
                 SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
                 builder.setTables("appParam");
-                Cursor cursor1 = builder.query(db,new String[]{"pKey","pIntegerValue"},"pKey = ?1",new String[]{"terminalId"},null,null,null);
+                Cursor cursor1 = builder.query(db, new String[]{"pKey", "pIntegerValue"}, "pKey = ?1", new String[]{"terminalId"}, null, null, null);
 
-                if(cursor1.getCount() == 1)
-                {
-                    return 0 ;
-                }else
-                {
+                if (cursor1.getCount() == 1) {
+                    return 0;
+                } else {
                     return -1;
                 }
 
 
-
             default:
-                return -1 ;
+                return -1;
 
 
         }
     }
 
-    public void wireWebView(WebView webView)
-    {
-        WebViewClient customClient = new WebViewClient(){
+    public void wireWebView(WebView webView) {
+        WebViewClient customClient = new WebViewClient() {
 
             WebView relatedWebView;
             DatabaseManager databaseManager;
@@ -220,22 +220,58 @@ public class DatabaseManager extends SQLiteOpenHelper {
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
 
                 String referer = request.getRequestHeaders().get("referer");
-                Uri uri = request.getUrl() ;
+                Uri uri = request.getUrl();
                 String viewUrl = view.getUrl();
-                String viewOriginalUrl = view.getOriginalUrl() ;
+                String viewOriginalUrl = view.getOriginalUrl();
 
                 return null;
             }
 
-            public WebViewClient setup(WebView webView1, DatabaseManager databaseManager1)
-            {
-                this.relatedWebView = webView1 ;
-                this.databaseManager = databaseManager1 ;
-                return this ;
+            /**
+             * Notify the host application of a resource request and allow the
+             * application to return the data.  If the return value is null, the WebView
+             * will continue to load the resource as usual.  Otherwise, the return
+             * response and data will be used.  NOTE: This method is called on a thread
+             * other than the UI thread so clients should exercise caution
+             * when accessing private data or the view system.
+             *
+             * @param view The {@link android.webkit.WebView} that is requesting the
+             *             resource.
+             * @param url  The raw url of the resource.
+             * @return A {@link android.webkit.WebResourceResponse} containing the
+             * response information or null if the WebView should load the
+             * resource itself.
+             * @deprecated Use {@link #shouldInterceptRequest(android.webkit.WebView, android.webkit.WebResourceRequest)
+             * shouldInterceptRequest(WebView, WebResourceRequest)} instead.
+             */
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
+
+                URI uri = URI.create(url) ;
+
+                if(uri.getScheme().contentEquals("ueshiba"))
+                {
+                    String[] pathTokens = uri.getPath().split("/");
+
+                    if(pathTokens.length > 1)
+                    {
+
+                    }
+                }
+
+
+                return null;
             }
-        }.setup(webView,this);
+
+            public WebViewClient setup(WebView webView1, DatabaseManager databaseManager1) {
+                this.relatedWebView = webView1;
+                this.databaseManager = databaseManager1;
+                return this;
+            }
+        }.setup(webView, this);
 
         webView.setWebViewClient(customClient);
     }
+
 
 }
