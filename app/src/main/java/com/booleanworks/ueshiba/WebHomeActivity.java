@@ -226,56 +226,13 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
     @Override
     protected void onPause() {
-        super.onPause();
-        if (this.usedCamera != null) {
-            //this.usedCamera.reconnect();
-            //this.usedCamera.unlock();
-            //this.usedCamera.release();
-            try {
-                //this.usedCamera.reconnect();
-                this.usedCamera.stopPreview();
-                this.usedCamera.release();
-                this.usedCamera = null;
-
-            } catch (RuntimeException e) {
-                e.printStackTrace();
-            }
-        }
+        this.finish();
+        ;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        for (int ctCam = 0; ctCam < Camera.getNumberOfCameras(); ctCam++) {
-
-            if (this.usedCamera == null) {
-                Camera cCam = Camera.open(ctCam);
-
-                //cCam.lock();
-                Camera.CameraInfo camInfo = new Camera.CameraInfo();
-                Camera.getCameraInfo(ctCam, camInfo);
-                if (camInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    this.usedCamera = cCam;
-
-
-                    Camera.Parameters camParameters = this.usedCamera.getParameters();
-                    camParameters.setPictureSize(64 * 5, 48 * 5);
-                    this.usedCamera.setParameters(camParameters);
-
-
-                } else {
-                    cCam.release();
-                }
-
-            }
-
-        }
-
-        this.previewSurfaceView = new CameraPreview(this, this.usedCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.cameraPreviewFrame);
-        preview.addView(this.previewSurfaceView);
-
 
     }
 }
