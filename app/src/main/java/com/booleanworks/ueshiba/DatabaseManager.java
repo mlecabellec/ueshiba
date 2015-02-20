@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.net.http.AndroidHttpClient;
 import android.os.Build;
 import android.os.Parcel;
 import android.support.annotation.NonNull;
@@ -15,6 +16,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import org.apache.http.HttpRequest;
+import org.apache.http.client.methods.HttpPost;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -89,9 +93,10 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         db.beginTransaction();
         db.execSQL("CREATE TABLE appParam (pKey TEXT PRIMARY KEY, pTextValue TEXT,pIntegerValue INTEGER,pFloatValue FLOAT,jsonData BLOB)");
-        db.execSQL("CREATE TABLE appPage (pageId INTEGER PRIMARY KEY, htmlContent BLOB, htmlContentFile TEXT)");
-        db.execSQL("CREATE TABLE appContent (contentId INTEGER PRIMARY KEY, binaryContent BLOB, binaryContentFile TEXT)");
-        db.execSQL("CREATE TABLE appData (dataId INTEGER PRIMARY KEY, userId INTEGER , terminalId INTEGER,jsonContent BLOB)");
+        db.execSQL("CREATE TABLE appPackage (packageId INTEGER PRIMARY KEY, htmlContent BLOB, htmlContentFile TEXT)");
+        db.execSQL("CREATE TABLE appPage (pageId INTEGER PRIMARY KEY, packageId INTEGER, htmlContent BLOB, htmlContentFile TEXT)");
+        db.execSQL("CREATE TABLE appContent (contentId INTEGER PRIMARY KEY, packageId INTEGER, binaryContent BLOB, binaryContentFile TEXT)");
+        db.execSQL("CREATE TABLE appData (dataId INTEGER PRIMARY KEY, packageId INTEGER, userId INTEGER , terminalId INTEGER,jsonContent BLOB)");
 
         //db.execSQL("INSERT INTO appParam(pkey,pIntegerValue) VALUES ('terminalId',"+terminalId+")");
         //db.execSQL("INSERT INTO appParam(pkey,pIntegerValue) VALUES ('userId',"+userId+")");
@@ -109,11 +114,17 @@ public class DatabaseManager extends SQLiteOpenHelper {
 
         ContentValues serverBaseUrlValue = new ContentValues();
         serverBaseUrlValue.put("pKey", "serverBaseUrl");
-        serverBaseUrlValue.put("pTextValue", "http://poc2015a.booleanworks.com");
+        serverBaseUrlValue.put("pTextValue", "http://ueshiba1.booleanworks.com");
         db.insert("appParam", null, serverBaseUrlValue);
+
+        ContentValues package1Value = new ContentValues();
+        package1Value.put("packageId", 1);
+        package1Value.put("htmlContent", "<html><head><title>TEST PACKAGE 1</title></head><body><p>TEST PACKAGE 1<p></body></html>");
+        db.insert("appPackage", null, package1Value);
 
         ContentValues page1Value = new ContentValues();
         page1Value.put("pageId", 1);
+        page1Value.put("packageId", 1);
         page1Value.put("htmlContent", "<html><head><title>TEST PAGE 1</title></head><body><p>TEST PAGE 1<p></body></html>");
         db.insert("appPage", null, page1Value);
 
@@ -271,6 +282,86 @@ public class DatabaseManager extends SQLiteOpenHelper {
         }.setup(webView, this);
 
         webView.setWebViewClient(customClient);
+    }
+
+
+    public String getHtmlDataFromCode(WebView webView,String code)
+    {
+
+        AndroidHttpClient httpClient = AndroidHttpClient.newInstance("ueshiba");
+
+        SQLiteDatabase db =  this.getWritableDatabase() ;
+
+        SQLiteQueryBuilder paramQb = new SQLiteQueryBuilder();
+        paramQb.setTables("appParam");
+        Cursor paramCursor = paramQb.query(db, new String[]{"pKey", "pTextValue","pIntegerValue","pFloatValue","jsonData"}, null, null, null, null, null);
+
+        Integer userId = null ;
+        Integer terminalId = null ;
+        String serverBaseUrl = "http://ueshiba1.booleanworks.com";
+
+       while(!paramCursor.isAfterLast())
+       {
+           if(paramCursor.getString(0).equalsIgnoreCase("userId"))
+           {
+               userId = paramCursor.getInt(2) ;
+           }
+
+           if(paramCursor.getString(0).equalsIgnoreCase("terminalId"))
+           {
+               terminalId= paramCursor.getInt(2) ;
+           }
+
+           if(paramCursor.getString(0).equalsIgnoreCase("serverBaseUrl"))
+           {
+               serverBaseUrl= paramCursor.getString(1) ;
+           }
+
+       }
+
+        paramCursor.close();
+
+
+        if(code.startsWith("PK,"))
+        {//Package
+            Integer packageId = Integer.getInteger(code.substring(3)) ;
+
+            if(packageId != null)
+            {
+                SQLiteQueryBuilder packageQb = new SQLiteQueryBuilder();
+                packageQb.setTables("appPackage");
+
+                Cursor packageCursor = packageQb.query(db, new String[]{"packageId", "htmlContent"}, "packageId = ?1", new String[]{packageId.toString()}, null, null, null);
+
+                if(packageCursor.getCount() == 1)
+                {
+                    //TODO: we have the content display it !
+                }else
+                {
+                    HttpPost httpPost = new HttpPost(serverBaseUrl + "/package/get/" + packageId.toString());
+                    httpPost.getParams().setIntParameter("terminalId",terminalId);
+                    httpPost.getParams().setIntParameter("userId",userId);
+                }
+
+            }
+
+
+        }else if(code.startsWith("PG,"))
+        {//Page
+            Integer pageId = Integer.getInteger(code.substring(3)) ;
+
+        }else if(code.startsWith("CN,"))
+        {//Content
+            Integer contentId = Integer.getInteger(code.substring(3)) ;
+
+        }else if(code.startsWith("US,"))
+        {//User param
+            Integer newUserId = Integer.getInteger(code.substring(3)) ;
+
+        }
+
+
+        return "" ;
     }
 
 
