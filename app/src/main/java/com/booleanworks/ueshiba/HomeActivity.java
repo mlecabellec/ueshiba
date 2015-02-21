@@ -29,7 +29,7 @@ import java.util.TreeMap;
 
 public class HomeActivity extends ActionBarActivity {
 
-    public ListView mainListView = null ;
+    public ListView mainListView = null;
 
 
     @Override
@@ -38,8 +38,8 @@ public class HomeActivity extends ActionBarActivity {
         //setContentView(R.layout.activity_home);
         this.setContentView(R.layout.activity_home_alt1);
 
-        LinearLayout mainLinearLayout = (LinearLayout) this.findViewById(R.id.mainLinearLayout) ;
-        WebView webView = (WebView) this.findViewById(R.id.webView) ;
+        LinearLayout mainLinearLayout = (LinearLayout) this.findViewById(R.id.mainLinearLayout);
+        WebView webView = (WebView) this.findViewById(R.id.webView);
         webView.loadUrl("http://www.google.com");
 
     }
@@ -67,13 +67,11 @@ public class HomeActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void doCapture(View view)
-    {
+    public void doCapture(View view) {
 
     }
 
-    public void doExit(View view)
-    {
+    public void doExit(View view) {
 
     }
 

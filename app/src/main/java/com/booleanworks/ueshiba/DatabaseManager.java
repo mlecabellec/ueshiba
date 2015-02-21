@@ -1,5 +1,6 @@
 package com.booleanworks.ueshiba;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -17,9 +18,16 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -227,8 +235,11 @@ public class DatabaseManager extends SQLiteOpenHelper {
              * response information or null if the WebView should load the
              * resource itself.
              */
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+
+                //TODO: ensure LOLLIPOP support !!
 
                 String referer = request.getRequestHeaders().get("referer");
                 Uri uri = request.getUrl();
@@ -258,14 +269,12 @@ public class DatabaseManager extends SQLiteOpenHelper {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
-                URI uri = URI.create(url) ;
+                URI uri = URI.create(url);
 
-                if(uri.getScheme().contentEquals("ueshiba"))
-                {
+                if (uri.getScheme().contentEquals("ueshiba")) {
                     String[] pathTokens = uri.getPath().split("/");
 
-                    if(pathTokens.length > 1)
-                    {
+                    if (pathTokens.length > 1) {
 
                     }
                 }
@@ -285,83 +294,82 @@ public class DatabaseManager extends SQLiteOpenHelper {
     }
 
 
-    public String getHtmlDataFromCode(WebView webView,String code)
-    {
+    public String getHtmlDataFromCode(WebView webView, String code) {
 
         AndroidHttpClient httpClient = AndroidHttpClient.newInstance("ueshiba");
+        HttpConnectionParams.setSoTimeout(httpClient.getParams(),60*1000);
 
-        SQLiteDatabase db =  this.getWritableDatabase() ;
+        SQLiteDatabase db = this.getWritableDatabase();
 
         SQLiteQueryBuilder paramQb = new SQLiteQueryBuilder();
         paramQb.setTables("appParam");
-        Cursor paramCursor = paramQb.query(db, new String[]{"pKey", "pTextValue","pIntegerValue","pFloatValue","jsonData"}, null, null, null, null, null);
+        Cursor paramCursor = paramQb.query(db, new String[]{"pKey", "pTextValue", "pIntegerValue", "pFloatValue", "jsonData"}, null, null, null, null, null);
 
-        Integer userId = null ;
-        Integer terminalId = null ;
+        Integer userId = null;
+        Integer terminalId = null;
         String serverBaseUrl = "http://ueshiba1.booleanworks.com";
 
-       while(!paramCursor.isAfterLast())
-       {
-           if(paramCursor.getString(0).equalsIgnoreCase("userId"))
-           {
-               userId = paramCursor.getInt(2) ;
-           }
+        while (!paramCursor.isAfterLast()) {
+            if (paramCursor.getString(0).equalsIgnoreCase("userId")) {
+                userId = paramCursor.getInt(2);
+            }
 
-           if(paramCursor.getString(0).equalsIgnoreCase("terminalId"))
-           {
-               terminalId= paramCursor.getInt(2) ;
-           }
+            if (paramCursor.getString(0).equalsIgnoreCase("terminalId")) {
+                terminalId = paramCursor.getInt(2);
+            }
 
-           if(paramCursor.getString(0).equalsIgnoreCase("serverBaseUrl"))
-           {
-               serverBaseUrl= paramCursor.getString(1) ;
-           }
+            if (paramCursor.getString(0).equalsIgnoreCase("serverBaseUrl")) {
+                serverBaseUrl = paramCursor.getString(1);
+            }
 
-       }
+        }
 
         paramCursor.close();
 
 
-        if(code.startsWith("PK,"))
-        {//Package
-            Integer packageId = Integer.getInteger(code.substring(3)) ;
+        if (code.startsWith("PK,")) {//Package
+            Integer packageId = Integer.getInteger(code.substring(3));
 
-            if(packageId != null)
-            {
+            if (packageId != null) {
                 SQLiteQueryBuilder packageQb = new SQLiteQueryBuilder();
                 packageQb.setTables("appPackage");
 
                 Cursor packageCursor = packageQb.query(db, new String[]{"packageId", "htmlContent"}, "packageId = ?1", new String[]{packageId.toString()}, null, null, null);
 
-                if(packageCursor.getCount() == 1)
-                {
+                if (packageCursor.getCount() == 1) {
                     //TODO: we have the content display it !
-                }else
-                {
+                } else {
                     HttpPost httpPost = new HttpPost(serverBaseUrl + "/package/get/" + packageId.toString());
-                    httpPost.getParams().setIntParameter("terminalId",terminalId);
-                    httpPost.getParams().setIntParameter("userId",userId);
+
+
+                    try {
+                        httpClient.execute(httpPost, new BasicResponseHandler() {
+                            @Override
+                            public String handleResponse(HttpResponse response) throws HttpResponseException, IOException {
+                                return super.handleResponse(response);
+                            }
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
             }
 
 
-        }else if(code.startsWith("PG,"))
-        {//Page
-            Integer pageId = Integer.getInteger(code.substring(3)) ;
+        } else if (code.startsWith("PG,")) {//Page
+            Integer pageId = Integer.getInteger(code.substring(3));
 
-        }else if(code.startsWith("CN,"))
-        {//Content
-            Integer contentId = Integer.getInteger(code.substring(3)) ;
+        } else if (code.startsWith("CN,")) {//Content
+            Integer contentId = Integer.getInteger(code.substring(3));
 
-        }else if(code.startsWith("US,"))
-        {//User param
-            Integer newUserId = Integer.getInteger(code.substring(3)) ;
+        } else if (code.startsWith("US,")) {//User param
+            Integer newUserId = Integer.getInteger(code.substring(3));
 
         }
 
 
-        return "" ;
+        return "";
     }
 
 
