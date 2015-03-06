@@ -75,7 +75,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         preview.addView(this.previewSurfaceView);
 
         this.dataManager = SimpleFileDataManager.getInstance(this);
-        DatabaseManager.doBasicTest(this, 1);
+        //DatabaseManager.doBasicTest(this, 1);
         this.dataManager.wireWebView(webView);
 
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -105,7 +105,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
         this.sensorManager.registerListener(this.gyroListener, gyro, 1000000);
 
-        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://content/1'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='https://ueshiba.booleanworks.com/data/get/bwlogo.png'/><img src='ueshiba://bwlogo.png'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
 
 
     }
@@ -188,7 +188,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
             Result decodeResult = multiFormatReader.decode(new BinaryBitmap(globalHistogramBinarizer));
 
             Log.d("onPictureTaken", "text:" + decodeResult.getText());
-            ;
+
         } catch (NotFoundException e) {
             e.printStackTrace();
         }
@@ -203,26 +203,24 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @Override
     protected void onStop() {
         super.onStop();
+        //super.onStop();
         if (this.usedCamera != null) {
-            //this.usedCamera.reconnect();
-            //this.usedCamera.unlock();
-            //this.usedCamera.release();
-            try {
-                //this.usedCamera.reconnect();
-                this.usedCamera.stopPreview();
-                this.usedCamera.release();
-                this.usedCamera = null;
-
-            } catch (RuntimeException e) {
-                e.printStackTrace();
-            }
+            //this.usedCamera.stopPreview();
+            this.usedCamera.release();
         }
+        this.finish();
     }
 
     @Override
     protected void onPause() {
+        super.onPause();
+        if (this.usedCamera != null) {
+            //this.usedCamera.stopPreview();
+            this.usedCamera.release();
+            this.finish();
+        }
         this.finish();
-        ;
+
     }
 
     @Override

@@ -7,5 +7,6 @@
     <string name="text_quit">Quitter</string>
     <string name="msg_default_mms_subject">MMS</string>
     <string name="msg_intent_failed">Failed !</string>
+    <string name="title_activity_web_home">Ueshiba</string>
 
 </resources>

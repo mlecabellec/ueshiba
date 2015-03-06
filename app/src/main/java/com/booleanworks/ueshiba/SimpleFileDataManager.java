@@ -174,11 +174,7 @@ public class SimpleFileDataManager {
 
                 //TODO: ensure LOLLIPOP support !!
 
-                //String referer = request.getRequestHeaders().get("referer");
                 Uri uri = request.getUrl();
-                //String viewUrl = view.getUrl();
-                //String viewOriginalUrl = view.getOriginalUrl();
-
                 if ((uri != null) && (uri.getScheme() != null)&& (uri.getScheme().contentEquals("ueshiba"))) {
 
                     return this.xmlDataManager.obtainResource(uri.toString());
@@ -210,7 +206,6 @@ public class SimpleFileDataManager {
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
                 URI uri = URI.create(url);
-
                 if ((uri != null) && (uri.getScheme() != null)&& (uri.getScheme().contentEquals("ueshiba"))) {
 
                     return this.xmlDataManager.obtainResource(uri.toString());
@@ -258,6 +253,7 @@ public class SimpleFileDataManager {
         {
             mimeType = "video/mpeg" ;
         }else{
+            //illegal mimeTpe (value used later for protection against unwanted files)
             mimeType = "ILLEGAL!!" ;
         }
 
@@ -271,7 +267,7 @@ public class SimpleFileDataManager {
 
         }else
         {//try to fetch
-            URI ueshibaServerUri = URI.create(this.appParams.getProperty(SimpleFileDataManager.PARAM_NAME_BASE_URL) + "data/get/" + targetResource);
+            URI ueshibaServerUri = URI.create(this.appParams.getProperty(SimpleFileDataManager.PARAM_NAME_BASE_URL) + "/data/get/" + targetResource);
             HttpGet getReQuest = new HttpGet(ueshibaServerUri);
             getReQuest.addHeader(SimpleFileDataManager.PARAM_NAME_USERID,this.appParams.getProperty(SimpleFileDataManager.PARAM_NAME_USERID));
             getReQuest.addHeader(SimpleFileDataManager.PARAM_NAME_TERMINALID,this.appParams.getProperty(SimpleFileDataManager.PARAM_NAME_TERMINALID));
@@ -284,6 +280,12 @@ public class SimpleFileDataManager {
                 //TODO ouch... handle bad things !
             }
 
+            if(httpResponse == null)
+            {
+                //TODO current code prevents only bad exit, please make it better !
+                return null;
+            }
+
             if(httpResponse.getStatusLine().getStatusCode() == 200 && !mimeType.equalsIgnoreCase("ILLEGAL!!"))
             {
 
@@ -294,6 +296,11 @@ public class SimpleFileDataManager {
                     httpResponse.getEntity().writeTo(fos);
                     fos.flush();
                     fos.close();
+
+                    //TODO process text/plain ad package => fetch lines as wanted resources + display first html
+                    //TODO for other files => pass it to WebResponse
+
+
 
 
                 } catch (FileNotFoundException e) {

@@ -7,7 +7,7 @@
     <string name="text_quit">Quit</string>
     <string name="action_doCapture">doCapture</string>
     <string name="action_exit">doExit</string>
-    <string name="title_activity_web_home">WebHomeActivity</string>
+    <string name="title_activity_web_home">Ueshiba</string>
     <string name="msg_default_mms_subject">MMS</string>
     <string name="msg_intent_failed">Failed !</string>
 </resources>
