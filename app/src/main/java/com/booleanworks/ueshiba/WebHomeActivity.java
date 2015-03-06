@@ -216,6 +216,12 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
             Log.d("onPictureTaken", "text:" + decodeResult.getText());
 
+            if(decodeResult.getText().startsWith("ueshiba"))
+            {
+                WebView webView = (WebView) this.findViewById(R.id.webView);
+                webView.loadUrl(decodeResult.getText());
+            }
+
         } catch (NotFoundException e) {
             e.printStackTrace();
         }
