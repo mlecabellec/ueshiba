@@ -39,6 +39,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     public Camera usedCamera = null;
     public CameraPreview previewSurfaceView = null;
     public SimpleFileDataManager dataManager = null;
+    public ScheduledExecutorService captureScheduler = null ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,8 +112,8 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
         webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://bwlogo.png'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
 
-        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable(){
+        this.captureScheduler = Executors.newScheduledThreadPool(1);
+        this.captureScheduler.scheduleAtFixedRate(new Runnable(){
             public WebHomeActivity webHomeActivity ;
             public Runnable setup(WebHomeActivity webHomeActivity1)
             {
@@ -229,6 +230,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @Override
     protected void onStop() {
         super.onStop();
+        this.captureScheduler.shutdownNow();
         //super.onStop();
         if (this.usedCamera != null) {
             //this.usedCamera.stopPreview();
@@ -240,6 +242,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     @Override
     protected void onPause() {
         super.onPause();
+        this.captureScheduler.shutdownNow();
         if (this.usedCamera != null) {
             //this.usedCamera.stopPreview();
             this.usedCamera.release();
