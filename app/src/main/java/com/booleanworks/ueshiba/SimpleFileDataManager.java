@@ -60,7 +60,7 @@ public class SimpleFileDataManager {
 
         this.baseStorageDirectory = context.getExternalFilesDir(null);
 
-        this.httpClient = AndroidHttpClient.newInstance("ueshiba");
+        this.httpClient = AndroidHttpClient.newInstance("ueshiba",context);
         HttpConnectionParams.setSoTimeout(this.httpClient.getParams(),60*1000);
         HttpConnectionParams.setConnectionTimeout(this.httpClient.getParams(),60*1000);
 
