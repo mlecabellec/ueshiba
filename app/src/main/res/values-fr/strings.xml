@@ -1,7 +1,7 @@
 <resources>
 
     <string name="action_settings">Paramètres</string>
-    <string name="app_name">smart folder POC</string>
+    <string name="app_name">Ueshiba</string>
     <string name="hello_world">Bonjour !</string>
     <string name="text_capture">Acquérir QR</string>
     <string name="text_quit">Quitter</string>

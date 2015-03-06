@@ -26,6 +26,10 @@ import com.google.zxing.common.GlobalHistogramBinarizer;
 
 import java.io.IOException;
 import java.nio.IntBuffer;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 public class WebHomeActivity extends ActionBarActivity implements Camera.PictureCallback {
@@ -105,7 +109,29 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
         this.sensorManager.registerListener(this.gyroListener, gyro, 1000000);
 
-        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='https://ueshiba.booleanworks.com/data/get/bwlogo.png'/><img src='ueshiba://bwlogo.png'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://bwlogo.png'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(2);
+        scheduledExecutorService.scheduleAtFixedRate(new Runnable(){
+            public WebHomeActivity webHomeActivity ;
+            public Runnable setup(WebHomeActivity webHomeActivity1)
+            {
+                this.webHomeActivity = webHomeActivity1 ;
+                return this ;
+            }
+
+            /**
+             * Starts executing the active part of the class' code. This method is
+             * called when a thread is started that has been created with a class which
+             * implements {@code Runnable}.
+             */
+            @Override
+            public void run() {
+                this.webHomeActivity.doCapture();
+            }
+        }.setup(this),10,6, TimeUnit.SECONDS) ;
+
+
 
 
     }
@@ -154,11 +180,11 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
                 //this.usedCamera.unlock();
                 try {
                     this.usedCamera.reconnect();
-                    this.usedCamera.release();
+                    //this.usedCamera.release();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-                this.usedCamera.release();
+                //this.usedCamera.release();
             }
             e.printStackTrace();
         }
