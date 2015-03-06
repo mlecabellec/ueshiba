@@ -8,19 +8,14 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceView;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.MultiFormatReader;
@@ -39,7 +34,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     public SensorEventListener gyroListener = null;
     public Camera usedCamera = null;
     public CameraPreview previewSurfaceView = null;
-    public DatabaseManager databaseManager = null;
+    public SimpleFileDataManager dataManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,9 +74,9 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         FrameLayout preview = (FrameLayout) findViewById(R.id.cameraPreviewFrame);
         preview.addView(this.previewSurfaceView);
 
-        this.databaseManager = DatabaseManager.getInstance(this);
+        this.dataManager = SimpleFileDataManager.getInstance(this);
         DatabaseManager.doBasicTest(this, 1);
-        this.databaseManager.wireWebView(webView);
+        this.dataManager.wireWebView(webView);
 
         this.sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
