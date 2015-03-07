@@ -187,15 +187,23 @@ public class SimpleFileDataManager {
 
                 //TODO: ensure LOLLIPOP support !!
 
-                Uri uri = request.getUrl();
-                if ((uri != null) && (uri.getScheme() != null) && (uri.getScheme().contentEquals("ueshiba"))) {
+                try {
 
-                    Log.d("Ueshiba","intercept1: " + uri.toString());
-                    return this.xmlDataManager.obtainResource(uri.toString());
+                    Uri uri = request.getUrl();
+                    if ((uri != null) &&  (uri.getHost().equalsIgnoreCase("ueshiba"))) {
 
+                        Log.d("Ueshiba", "intercept1: " + uri.toString());
+                        return this.xmlDataManager.obtainResource(uri.toString());
+
+                    }
+
+                    Log.d("Ueshiba", "no-intercept1: " + uri.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e("ueshiba","intercept2-error",e);
                 }
 
-                Log.d("Ueshiba","no-intercept1: " + uri.toString());
+
                 return null;
             }
 
@@ -219,15 +227,23 @@ public class SimpleFileDataManager {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
 
-                URI uri = URI.create(url);
-                if ((uri != null) && (uri.getScheme() != null) && (uri.getScheme().contentEquals("ueshiba"))) {
+                try {
 
-                    Log.d("Ueshiba","intercept2: " + url);
-                    return this.xmlDataManager.obtainResource(uri.toString());
+                    URI uri = URI.create(url);
+                    if ((uri != null) &&  (uri.getHost().equalsIgnoreCase("ueshiba"))) {
 
+                        Log.d("Ueshiba", "intercept2: " + url);
+                        return this.xmlDataManager.obtainResource(uri.toString());
+
+                    }
+
+                    Log.d("Ueshiba", "no-intercept2: " + url);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e("ueshiba","intercept2-error",e);
+                    //TODO nothing
                 }
-
-                Log.d("Ueshiba","no-intercept2: " + url);
                 return null;
             }
 
@@ -248,11 +264,13 @@ public class SimpleFileDataManager {
 
         URI uriObject = URI.create(uri);
 
-        String targetResource = uriObject.getAuthority();
+        String targetResource = uriObject.getPath().replaceAll("/","");
+        Log.d("ueshiba","uriObject.getPath()="+uriObject.getPath());
+        Log.d("ueshiba","targetResource="+targetResource);
         String mimeType = "text/plain"; //default MIME
 
         if (targetResource.endsWith(".xhtml")) {
-            mimeType = "text/xhtml";
+            mimeType = "text/html";
         } else if (targetResource.endsWith(".txt")) {
             mimeType = "text/plain";
         } else if (targetResource.endsWith(".jpg")) {
@@ -270,9 +288,49 @@ public class SimpleFileDataManager {
         if (this.knownFiles.containsKey(targetResource)) {//We got it
             File targetFile = this.knownFiles.get(targetResource);
 
-            //TODO give the file !
+        try{
+            if (mimeType.contains("text/plain")) {//process package, fetch all files and render the first
+                BufferedReader targetFileBufferedReader = new BufferedReader(new FileReader(targetFile));
+                String cLine = "";
+                String firstLine = null;
+                while (cLine != null) {
+                    cLine = targetFileBufferedReader.readLine();
+                    if ((cLine != null) && (firstLine == null)) {
+                        firstLine = cLine;
+                    }
+                    this.obtainResource("http://ueshiba/" + cLine);
+                }
 
-            return null;
+                File newTarget = new File(this.baseStorageDirectory, firstLine);
+                if (newTarget.exists()) {//swap package file with first file of the package
+                    mimeType = "text/xhtml"; // assume it's an html page
+                    targetFile = newTarget;
+                }
+
+                targetFileBufferedReader.close();
+
+            }
+
+            long fileSize = targetFile.length();
+            Log.d("ueshiba", "fileSize= " + fileSize);
+
+            FileInputStream fis = new FileInputStream(targetFile);
+            WebResourceResponse webResourceResponse = new WebResourceResponse(mimeType, "UTF-8", fis);
+            //webResourceResponse.setStatusCodeAndReasonPhrase(200,"OK");
+            //webResourceResponse.setResponseHeaders(new HashMap<String,String>());
+            Log.d("Ueshiba", "webResponse OK");
+            return webResourceResponse;
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+            Log.e("eushiba","resource loader error",e);
+            //TODO handle weird things
+            File targetResourceFile = new File(this.baseStorageDirectory, targetResource);
+            if (targetResourceFile.exists()) {
+                targetResourceFile.delete();
+            }
+            Log.d("Ueshiba", "Exception", e);
+        }
 
 
         } else {//try to fetch
@@ -291,7 +349,7 @@ public class SimpleFileDataManager {
                 });
 
                 //httpsURLConnection.setSSLSocketFactory(SSLContext.getInstance("SSLv3").getSocketFactory());
-                SSLCertificateSocketFactory sslCertificateSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory.getDefault(20*1000);
+                SSLCertificateSocketFactory sslCertificateSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory.getDefault(20 * 1000);
                 sslCertificateSocketFactory.setTrustManagers(new TrustManager[]{new X509TrustManager() {
                     @Override
                     public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
@@ -318,66 +376,66 @@ public class SimpleFileDataManager {
 
                 FileOutputStream fos = new FileOutputStream(targetResourceFile, false);
                 InputStream is = httpsURLConnection.getInputStream();
-                int burstSize = 16 * 1024 ;
+                int burstSize = 16 * 1024;
                 while (burstSize > 0) {
                     byte[] fileWritebuffer = new byte[16 * 1024];
                     burstSize = is.read(fileWritebuffer);
-                    if(burstSize>0){
-                        fos.write(fileWritebuffer,0,burstSize);
+                    if (burstSize > 0) {
+                        fos.write(fileWritebuffer, 0, burstSize);
                     }
 
                 }
                 fos.flush();
                 fos.close();
 
-                if(mimeType.contains("text/plain"))
-                {//process package, fetch all files and render the first
-                    BufferedReader targetFileBufferedReader = new BufferedReader(new FileReader(targetResourceFile)) ;
-                    String cLine = "" ;
-                    String firstLine = null ;
-                    while(cLine != null)
-                    {
-                        cLine = targetFileBufferedReader.readLine() ;
-                        if((cLine != null) && (firstLine == null))
-                        {
-                            firstLine = cLine ;
+                if (mimeType.contains("text/plain")) {//process package, fetch all files and render the first
+                    BufferedReader targetFileBufferedReader = new BufferedReader(new FileReader(targetResourceFile));
+                    String cLine = "";
+                    String firstLine = null;
+                    while (cLine != null) {
+                        cLine = targetFileBufferedReader.readLine();
+                        if ((cLine != null) && (firstLine == null)) {
+                            firstLine = cLine;
                         }
-                        this.obtainResource("ueshibla://" + cLine) ;
+                        this.obtainResource("http://ueshiba/" + cLine);
                     }
 
-                    File newTarget = new File(this.baseStorageDirectory,firstLine) ;
-                    if(newTarget.exists())
-                    {//swap package file with first file of the package
-                        mimeType = "text/xhtml" ; // assume it's an html page
-                        targetResourceFile = newTarget ;
+                    File newTarget = new File(this.baseStorageDirectory, firstLine);
+                    if (newTarget.exists()) {//swap package file with first file of the package
+                        mimeType = "text/xhtml"; // assume it's an html page
+                        targetResourceFile = newTarget;
                     }
 
                     targetFileBufferedReader.close();
 
                 }
 
-                long fileSize = targetResourceFile.length() ;
-                Log.d("ueshiba","fileSize= " + fileSize);
+                long fileSize = targetResourceFile.length();
+                Log.d("ueshiba", "fileSize= " + fileSize);
 
-                FileInputStream fis = new FileInputStream(targetResourceFile) ;
-                WebResourceResponse webResourceResponse = new WebResourceResponse(mimeType,"UTF-8",fis);
-                Log.d("Ueshiba","webResponse OK");
-                return webResourceResponse ;
+                FileInputStream fis = new FileInputStream(targetResourceFile);
+                WebResourceResponse webResourceResponse = new WebResourceResponse(mimeType, "UTF-8", fis);
+                //webResourceResponse.setStatusCodeAndReasonPhrase(200,"OK");
+                //webResourceResponse.setResponseHeaders(new HashMap<String,String>());
+                Log.d("Ueshiba", "webResponse OK");
+                return webResourceResponse;
 
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+                Log.e("eushiba","resource loader error",e);
                 //TODO handle weird things
                 File targetResourceFile = new File(this.baseStorageDirectory, targetResource);
                 if (targetResourceFile.exists()) {
                     targetResourceFile.delete();
                 }
-                Log.d("Ueshiba","Exception",e);
-                return null;
+                Log.d("Ueshiba", "Exception", e);
+
             }
 
 
         }
+        return null;
 
     }
 

@@ -63,7 +63,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
 
                     Camera.Parameters camParameters = this.usedCamera.getParameters();
-                    camParameters.setPictureSize(64 * 5, 48 * 5);
+                    camParameters.setPictureSize(64 * 7, 48 * 7);
                     this.usedCamera.setParameters(camParameters);
 
 
@@ -110,7 +110,8 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
         this.sensorManager.registerListener(this.gyroListener, gyro, 1000000);
 
-        webView.loadData("<h1 id='test' onclick='alert(activity.doCapture())'>default text 36</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://bwlogo.png'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+        //webView.loadData("<h1 id='test'>default text 40</h1><img src='http://www.booleanworks.com/sites/default/files/booleanWorks-logo-20100920d2c.png'/><img src='ueshiba://bwlogo.png'/><script type='text/javascript'>alert(activity.testJs());</script>", "text/html", "UTF-8");
+        webView.loadUrl("http://ueshiba/ueshiba_welcome.xhtml");
 
         this.captureScheduler = Executors.newScheduledThreadPool(1);
         this.captureScheduler.scheduleAtFixedRate(new Runnable(){
@@ -216,9 +217,10 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
             Log.d("onPictureTaken", "text:" + decodeResult.getText());
 
-            if(decodeResult.getText().startsWith("ueshiba"))
+            if(decodeResult.getText().contains("ueshiba"))
             {
                 WebView webView = (WebView) this.findViewById(R.id.webView);
+                this.dataManager.wireWebView(webView);
                 webView.loadUrl(decodeResult.getText());
             }
 
