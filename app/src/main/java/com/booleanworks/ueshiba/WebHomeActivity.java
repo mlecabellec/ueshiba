@@ -39,7 +39,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
     public Camera usedCamera = null;
     public CameraPreview previewSurfaceView = null;
     public SimpleFileDataManager dataManager = null;
-    public ScheduledExecutorService captureScheduler = null ;
+    public ScheduledExecutorService captureScheduler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,12 +114,12 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
         webView.loadUrl("http://ueshiba/ueshiba_welcome.xhtml");
 
         this.captureScheduler = Executors.newScheduledThreadPool(1);
-        this.captureScheduler.scheduleAtFixedRate(new Runnable(){
-            public WebHomeActivity webHomeActivity ;
-            public Runnable setup(WebHomeActivity webHomeActivity1)
-            {
-                this.webHomeActivity = webHomeActivity1 ;
-                return this ;
+        this.captureScheduler.scheduleAtFixedRate(new Runnable() {
+            public WebHomeActivity webHomeActivity;
+
+            public Runnable setup(WebHomeActivity webHomeActivity1) {
+                this.webHomeActivity = webHomeActivity1;
+                return this;
             }
 
             /**
@@ -131,9 +131,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
             public void run() {
                 this.webHomeActivity.doCapture();
             }
-        }.setup(this),10,6, TimeUnit.SECONDS) ;
-
-
+        }.setup(this), 10, 4, TimeUnit.SECONDS);
 
 
     }
@@ -217,12 +215,16 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
             Log.d("onPictureTaken", "text:" + decodeResult.getText());
 
-            if(decodeResult.getText().contains("ueshiba"))
-            {
-                WebView webView = (WebView) this.findViewById(R.id.webView);
-                this.dataManager.wireWebView(webView);
-                webView.loadUrl(decodeResult.getText());
-            }
+            //if(decodeResult.getText().contains("ueshiba"))
+            //{
+            //    WebView webView = (WebView) this.findViewById(R.id.webView);
+            //    this.dataManager.wireWebView(webView);
+            //    webView.loadUrl(decodeResult.getText());
+            //}
+
+            WebView webView = (WebView) this.findViewById(R.id.webView);
+            this.dataManager.wireWebView(webView);
+            webView.loadUrl("http://ueshiba/" + decodeResult.getText());
 
         } catch (NotFoundException e) {
             e.printStackTrace();
