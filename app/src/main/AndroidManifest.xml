@@ -22,7 +22,8 @@
         </activity>
         <activity
             android:name=".WebHomeActivity"
-            android:label="@string/title_activity_web_home">
+            android:label="@string/title_activity_web_home"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
