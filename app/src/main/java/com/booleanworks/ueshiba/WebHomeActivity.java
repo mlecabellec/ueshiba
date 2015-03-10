@@ -133,7 +133,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
             public void run() {
                 this.webHomeActivity.doCapture();
             }
-        }.setup(this), 10, 4, TimeUnit.SECONDS);
+        }.setup(this), 12000, 2600, TimeUnit.MILLISECONDS);
 
 
     }
