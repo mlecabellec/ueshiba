@@ -198,6 +198,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
             Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, options);
             //camera.stopPreview();
             camera.stopPreview();
+            camera.setDisplayOrientation(90);
             camera.startPreview();
             //camera.release();
             //this.previewSurfaceView.getHolder().getSurface().release();
