@@ -63,6 +63,8 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
 
                     Camera.Parameters camParameters = this.usedCamera.getParameters();
+                    camParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+
                     camParameters.setPictureSize(64 * 7, 48 * 7);
                     this.usedCamera.setParameters(camParameters);
 
