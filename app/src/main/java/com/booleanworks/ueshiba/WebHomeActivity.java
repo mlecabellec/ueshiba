@@ -63,9 +63,9 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
 
 
                     Camera.Parameters camParameters = this.usedCamera.getParameters();
-                    camParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+                    //camParameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
 
-                    camParameters.setPictureSize(64 * 7, 48 * 7);
+                    camParameters.setPictureSize(64 * 5, 48 * 5);
                     this.usedCamera.setParameters(camParameters);
 
 
@@ -133,7 +133,7 @@ public class WebHomeActivity extends ActionBarActivity implements Camera.Picture
             public void run() {
                 this.webHomeActivity.doCapture();
             }
-        }.setup(this), 12000, 2600, TimeUnit.MILLISECONDS);
+        }.setup(this), 12000, 3700, TimeUnit.MILLISECONDS);
 
 
     }
